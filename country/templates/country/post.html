@@ -1,0 +1,30 @@
+{% extends 'country/base.html' %}
+
+{% block content %}
+<h1>{{ post.title }}</h1>
+
+{% if post.photo %}
+    <img src="{{ post.photo.url }}" alt="{{ post.title }}" style="max-width: 300px;">
+{% endif %}
+
+{% with post.tags.all as tags %}
+    {% if tags %}
+        <ul class="tags-list">
+            <li>Теги:</li>
+            {% for t in tags %}
+                <li><a href="{{ t.get_absolute_url }}">{{ t.tag }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+
+{% if user.is_authenticated %}
+    <p><a href="{% url 'edit_page' post.pk %}">Редактировать страну</a></p>
+{% endif %}
+
+{% if user.is_authenticated %}
+    <p><a href="{% url 'delete_page' post.pk %}">Удалить страну</a></p>
+{% endif %}
+
+<p>{{ post.content|linebreaks }}</p>
+{% endblock %}

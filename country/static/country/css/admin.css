@@ -1,0 +1,90 @@
+body {
+    font-family: 'Century Gothic', sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* Шапка админ-панели */
+#header {
+    background: #333;
+    color: white;
+}
+#header a:link, #header a:visited {
+    color: white;
+}
+
+div.breadcrumbs {
+    background: #ddd;
+    color: #333;
+}
+div.breadcrumbs a {
+    color: #333;
+}
+
+/* Заголовки блоков*/
+.module caption,
+.module h2 {
+    background: #f0f0f0;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Левое меню*/
+#content-main .module ul li a,
+.dashboard .module ul li a,
+.module ul li a {
+    color: #333 !important;
+}
+#content-main .module h2,
+.module h2 {
+    color: #333 !important;
+    background: #f0f0f0 !important;
+}
+
+/* Панель фильтрации */
+#changelist-filter {
+    background: #f0f0f0;
+    border-color: #ddd;
+}
+#changelist-filter li.selected a {
+    background: #f0f0f0;
+    color: #333;
+    font-weight: bold;
+}
+
+/* Кнопки */
+.button, input[type="submit"], input[type="button"], .submit-row input {
+    background: #333;
+    border-color: #222;
+    color: white;
+}
+.button:hover, input[type="submit"]:hover {
+    background: #555;
+}
+
+/* Основные ссылки */
+a:link, a:visited {
+    color: #333;
+}
+a:hover {
+    color: #1abc9c;
+}
+
+#changelist .results table {
+    background: white;
+}
+#changelist .results th, #changelist .results td {
+    border-color: #ddd;
+}
+
+/* Строка поиска */
+#toolbar form input[type="submit"] {
+    background: #333;
+}
+
+.dashboard #content-related .module h2 {
+    background: #f0f0f0;
+    color: #333;
+}
+.dashboard #content-related .module ul li a {
+    color: #333;
+}

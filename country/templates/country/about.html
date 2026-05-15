@@ -1,0 +1,16 @@
+{% extends 'country/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    <p>Этот сайт посвящен путешествиям по разным странам. Здесь вы найдете информацию о достопримечательностях, городах и многом другом.</p>
+
+
+    <h2>Загрузка файла</h2>
+    <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Отправить</button>
+    </form>
+{% endblock %}
