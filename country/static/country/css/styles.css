@@ -80,3 +80,108 @@ main {
     color: white;
     font-weight: bold;
 }
+
+/* ===== Стили для форм авторизации и профиля ===== */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    padding: 20px;
+}
+
+.auth-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 30px 40px;
+    width: 100%;
+    max-width: 450px;
+    transition: all 0.3s ease;
+}
+
+.auth-card h1 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #333;
+    font-weight: 600;
+    font-size: 1.8rem;
+}
+
+.auth-card label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #555;
+}
+
+.auth-card input[type="text"],
+.auth-card input[type="password"],
+.auth-card input[type="email"],
+.auth-card select,
+.auth-card textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.auth-card input:focus,
+.auth-card select:focus,
+.auth-card textarea:focus {
+    border-color: #333;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(51, 51, 51, 0.1);
+}
+
+.auth-card button {
+    width: 100%;
+    padding: 12px;
+    background-color: #333;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.auth-card button:hover {
+    background-color: #555;
+}
+
+.auth-card button:active {
+    transform: scale(0.98);
+}
+
+.auth-card .errorlist {
+    color: #dc3545;
+    font-size: 0.85rem;
+    list-style: none;
+    padding-left: 0;
+    margin-top: 5px;
+}
+
+.auth-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+}
+
+.auth-footer a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+.profile-card {
+    max-width: 550px;
+}

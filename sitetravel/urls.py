@@ -13,6 +13,8 @@ admin.site.index_title = "Добро пожаловать в панель упр
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('country.urls')),
+    path('users/', include('users.urls', namespace='users')),
+
 ]
 
 handler404 = 'country.views.page_not_found'

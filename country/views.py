@@ -12,7 +12,7 @@ import os
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .utils import DataMixin
 
 menu = [
@@ -161,8 +161,7 @@ class TagListView(DataMixin, ListView):
         return self.get_mixin_context(context, title=f'Тег: {tag.tag}')
 
 
-
-class CountryCreateView(DataMixin, CreateView):
+class CountryCreateView(LoginRequiredMixin, DataMixin, CreateView):
     form_class = AddPostForm
     template_name = 'country/add_page.html'
     success_url = reverse_lazy('home')

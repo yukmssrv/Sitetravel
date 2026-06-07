@@ -13,6 +13,7 @@
         {% include 'country/includes/menu.html' %}
     </header>
 
+    {% block sidebar %}
     <div class="categories">
         {% show_categories %}
     </div>
@@ -20,12 +21,12 @@
     <div class="tags">
         {% show_all_tags %}
     </div>
+    {% endblock %}
 
     <main>
         {% block content %}
         {% endblock %}
     </main>
-
 
     <footer>
         <p> 2026 Сайт о путешествиях</p>

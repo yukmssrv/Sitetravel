@@ -18,11 +18,11 @@
     {% endif %}
 {% endwith %}
 
-{% if user.is_authenticated %}
+{% if perms.country.change_country %}
     <p><a href="{% url 'edit_page' post.pk %}">Редактировать страну</a></p>
 {% endif %}
 
-{% if user.is_authenticated %}
+{% if perms.country.delete_country %}
     <p><a href="{% url 'delete_page' post.pk %}">Удалить страну</a></p>
 {% endif %}
 
