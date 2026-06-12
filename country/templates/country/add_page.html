@@ -1,12 +1,26 @@
 {% extends 'country/base.html' %}
 
+{% block sidebar %}{% endblock %}
+
 {% block content %}
 <h1>{{ title }}</h1>
 
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Добавить</button>
+    <div class="attraction-formset">
+        <h2>Достопримечательности</h2>
+        {{ attraction_formset.management_form }}
+        {% for attraction_form in attraction_formset %}
+            <div class="attraction-form">
+                {% for hidden in attraction_form.hidden_fields %}
+                    {{ hidden }}
+                {% endfor %}
+                {{ attraction_form.as_p }}
+            </div>
+        {% endfor %}
+    </div>
+    <button type="submit">Сохранить</button>
 </form>
 
 {% endblock %}

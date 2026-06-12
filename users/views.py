@@ -13,6 +13,8 @@ from .forms import UserPasswordChangeForm
 from django.shortcuts import redirect
 from django.views.generic.edit import CreateView
 from .forms import RegisterUserForm
+from .forms import UserProfileForm
+from .models import UserProfile
 class LoginUserForm(AuthenticationForm):
     username = forms.CharField(label='Логин или E-mail', widget=forms.TextInput(attrs={'class': 'form-input'}))
     password = forms.CharField(label='Пароль', widget=forms.PasswordInput(attrs={'class': 'form-input'}))
@@ -42,10 +44,31 @@ class ProfileUser(LoginRequiredMixin, UpdateView):
     extra_context = {'title': 'Профиль пользователя'}
 
     def get_success_url(self):
-        return reverse_lazy('users:profile', args=[self.request.user.pk])
+        return reverse_lazy('users:profile')
 
     def get_object(self, queryset=None):
         return self.request.user
+
+    def get_user_profile(self):
+        profile, created = UserProfile.objects.get_or_create(user=self.request.user)
+        return profile
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profile_form'] = UserProfileForm(instance=self.get_user_profile())
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=self.get_user_profile())
+        if form.is_valid() and profile_form.is_valid():
+            if request.FILES.get('photo'):
+                profile_form.save()
+            return self.form_valid(form)
+        context = self.get_context_data(form=form)
+        context['profile_form'] = profile_form
+        return self.render_to_response(context)
 
 
 class UserPasswordChange(PasswordChangeView):

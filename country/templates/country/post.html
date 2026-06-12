@@ -1,10 +1,48 @@
 {% extends 'country/base.html' %}
 
+{% block sidebar %}{% endblock %}
+
 {% block content %}
 <h1>{{ post.title }}</h1>
 
-{% if post.photo %}
-    <img src="{{ post.photo.url }}" alt="{{ post.title }}" style="max-width: 300px;">
+<div class="country-detail">
+    {% if post.photo %}
+        <img src="{{ post.photo.url }}" alt="{{ post.title }}">
+    {% endif %}
+    <div class="country-detail-text">
+        <p>{{ post.content|linebreaks }}</p>
+    </div>
+</div>
+
+<div class="likes">
+    <form method="post" action="{% url 'toggle_like' post.slug %}" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="vote" value="1">
+        <button type="submit" class="like-btn">👍 {{ likes_count }}</button>
+    </form>
+    <form method="post" action="{% url 'toggle_like' post.slug %}" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="vote" value="-1">
+        <button type="submit" class="dislike-btn">👎 {{ dislikes_count }}</button>
+    </form>
+</div>
+
+{% if post.attractions.all %}
+    <section class="attractions">
+        <h2>Основные достопримечательности</h2>
+        <div class="attractions-list">
+            {% for attraction in post.attractions.all %}
+                <a class="attraction-card" href="{{ attraction.get_absolute_url }}">
+                    {% if attraction.photo %}
+                        <img src="{{ attraction.photo.url }}" alt="{{ attraction.title }}">
+                    {% elif post.photo %}
+                        <img src="{{ post.photo.url }}" alt="{{ attraction.title }}">
+                    {% endif %}
+                    <span>{{ attraction.title }}</span>
+                </a>
+            {% endfor %}
+        </div>
+    </section>
 {% endif %}
 
 {% with post.tags.all as tags %}
@@ -18,13 +56,33 @@
     {% endif %}
 {% endwith %}
 
-{% if perms.country.change_country %}
+<!-- Комментарии -->
+<h3>Комментарии</h3>
+{% for comment in post.comments.all %}
+    <div class="comment">
+        <strong>{{ comment.author.username }}</strong> <small>{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+        <p>{{ comment.text }}</p>
+    </div>
+{% empty %}
+    <p>Пока нет комментариев. Будьте первым!</p>
+{% endfor %}
+
+{% if user.is_authenticated %}
+    <h4>Добавить комментарий</h4>
+    <form method="post" action="{% url 'add_comment' post.slug %}">
+        {% csrf_token %}
+        {{ comment_form.as_p }}
+        <button type="submit">Отправить</button>
+    </form>
+{% else %}
+    <p><a href="{% url 'users:login' %}">Войдите</a>, чтобы оставить комментарий.</p>
+{% endif %}
+
+{% if user == post.author or perms.country.change_country %}
     <p><a href="{% url 'edit_page' post.pk %}">Редактировать страну</a></p>
 {% endif %}
 
-{% if perms.country.delete_country %}
+{% if user == post.author or perms.country.change_country %}
     <p><a href="{% url 'delete_page' post.pk %}">Удалить страну</a></p>
 {% endif %}
-
-<p>{{ post.content|linebreaks }}</p>
 {% endblock %}

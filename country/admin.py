@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
 
-from .models import Country, Category, TagPost, ExtraInfo
+from .models import Country, Category, TagPost, ExtraInfo, Attraction
 from .utils import DataMixin
 
 
@@ -92,6 +92,14 @@ class TagPostAdmin(admin.ModelAdmin):
 class ExtraInfoAdmin(admin.ModelAdmin):
     list_display = ('id', 'capital', 'population')
     list_display_links = ('id', 'capital')
+
+
+@admin.register(Attraction)
+class AttractionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'country', 'slug')
+    list_display_links = ('title',)
+    search_fields = ('title', 'country__title')
+    list_filter = ('country',)
 
 
 

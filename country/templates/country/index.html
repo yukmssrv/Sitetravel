@@ -12,13 +12,16 @@
                     <p class="first">Категория: {{ post.cat.name }}</p>
                     <p class="last">Дата: {{ post.time_update|date:"d-m-Y H:i:s" }}</p>
                 </div>
-                {% if post.photo %}
-                    <img src="{{ post.photo.url }}" alt="{{ post.title }}" style="width: 150px; height: auto; float: left; margin-right: 15px;">
-                {% endif %}
-
-                <h2>{{ post.title }}</h2>
-                <p>{{ post.content }}</p>
-                <p><a href="{{ post.get_absolute_url }}">Читать подробнее</a></p>
+                <div class="country-card-content">
+                    {% if post.photo %}
+                        <img src="{{ post.photo.url }}" alt="{{ post.title }}">
+                    {% endif %}
+                    <div class="country-card-text">
+                        <h2>{{ post.title }}</h2>
+                        <p>{{ post.content|truncatewords:25 }}</p>
+                        <p><a href="{{ post.get_absolute_url }}">Читать подробнее</a></p>
+                    </div>
+                </div>
                 {% if not forloop.last %}<hr>{% endif %}
             </li>
 

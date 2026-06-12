@@ -2,11 +2,10 @@ from .models import Country
 
 menu = [
     {'title': 'О сайте', 'url_name': 'about'},
-    {'title': 'Обратная связь', 'url_name': 'contact'},
 ]
 
 class DataMixin:
-    paginate_by = 2
+    paginate_by = 3
     title_page = None
     extra_context = {}
 

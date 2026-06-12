@@ -1,0 +1,17 @@
+{% extends 'country/base.html' %}
+
+{% block content %}
+<h1>{{ attraction.title }}</h1>
+
+<div class="country-detail">
+    {% if attraction.photo %}
+        <img src="{{ attraction.photo.url }}" alt="{{ attraction.title }}">
+    {% elif attraction.country.photo %}
+        <img src="{{ attraction.country.photo.url }}" alt="{{ attraction.title }}">
+    {% endif %}
+    <div class="country-detail-text">
+        <p><a href="{{ attraction.country.get_absolute_url }}">{{ attraction.country.title }}</a></p>
+        <p>{{ attraction.description|linebreaks }}</p>
+    </div>
+</div>
+{% endblock %}

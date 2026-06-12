@@ -1,24 +1,28 @@
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, Http404
 from django.shortcuts import redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.http import HttpResponseNotFound
 from django.shortcuts import render
-from .models import Country, TagPost, Category
+from .models import Country, TagPost, Category, Attraction
 from django.shortcuts import get_object_or_404
-from .forms import AddPostForm, UploadFileForm
+from .forms import AddPostForm, UploadFileForm, AttractionFormSet, CommentForm
 import uuid
 import os
 from django.views import View
 from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from .utils import DataMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
+from .models import Like
+
 
 menu = [
     {'title': 'О сайте', 'url_name': 'about'},
-    {'title': 'Обратная связь', 'url_name': 'contact'},
-    {'title': 'Войти', 'url_name': 'login'},
 ]
 posts_db = [
     {
@@ -118,11 +122,28 @@ class CountryDetailView(DataMixin, DetailView):
     slug_url_kwarg = 'post_slug'
 
     def get_queryset(self):
-        return Country.published.all()
+        return Country.published.all().prefetch_related('attractions')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['likes_count'] = self.object.likes.filter(vote=Like.LIKE).count()
+        context['dislikes_count'] = self.object.likes.filter(vote=Like.DISLIKE).count()
+        context['comment_form'] = CommentForm()
         return self.get_mixin_context(context, title=context['post'].title)
+
+
+class AttractionDetailView(DataMixin, DetailView):
+    model = Attraction
+    template_name = 'country/attraction.html'
+    context_object_name = 'attraction'
+    slug_url_kwarg = 'attraction_slug'
+
+    def get_queryset(self):
+        return Attraction.objects.select_related('country')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        return self.get_mixin_context(context, title=context['attraction'].title)
 
 
 cats_db = [
@@ -167,6 +188,27 @@ class CountryCreateView(LoginRequiredMixin, DataMixin, CreateView):
     success_url = reverse_lazy('home')
     title_page = 'Добавление страны'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['attraction_formset'] = kwargs.get('attraction_formset') or AttractionFormSet(instance=Country())
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form = self.get_form()
+        attraction_formset = AttractionFormSet(request.POST, request.FILES, instance=Country())
+        if form.is_valid() and attraction_formset.is_valid():
+            return self.form_valid(form, attraction_formset)
+        return self.render_to_response(self.get_context_data(form=form, attraction_formset=attraction_formset))
+
+    def form_valid(self, form, attraction_formset):
+        self.object = form.save(commit=False)
+        self.object.author = self.request.user
+        self.object.save()
+        attraction_formset.instance = self.object
+        attraction_formset.save()
+        return redirect(self.get_success_url())
+
 class AddPage(DataMixin, FormView):
     form_class = AddPostForm
     template_name = 'country/add_page.html'
@@ -177,21 +219,83 @@ class AddPage(DataMixin, FormView):
         form.save()
         return super().form_valid(form)
 
-class CountryUpdateView(DataMixin, UpdateView):
+
+class CountryUpdateView(LoginRequiredMixin, DataMixin, UpdateView):
     model = Country
     form_class = AddPostForm
     template_name = 'country/add_page.html'
     success_url = reverse_lazy('home')
     title_page = 'Редактирование страны'
 
-class CountryDeleteView(DataMixin, DeleteView):
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        # Проверяем: текущий пользователь — автор или суперпользователь
+        if obj.author != request.user and not request.user.is_superuser:
+            raise PermissionDenied("Вы не можете редактировать эту страну.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['attraction_formset'] = kwargs.get('attraction_formset') or AttractionFormSet(instance=self.object)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        attraction_formset = AttractionFormSet(request.POST, request.FILES, instance=self.object)
+        if form.is_valid() and attraction_formset.is_valid():
+            return self.form_valid(form, attraction_formset)
+        return self.render_to_response(self.get_context_data(form=form, attraction_formset=attraction_formset))
+
+    def form_valid(self, form, attraction_formset):
+        self.object = form.save()
+        attraction_formset.instance = self.object
+        attraction_formset.save()
+        return redirect(self.get_success_url())
+
+class CountryDeleteView(LoginRequiredMixin, DataMixin, DeleteView):
     model = Country
     success_url = reverse_lazy('home')
     template_name = 'country/delete_confirm.html'
     title_page = 'Удаление страны'
 
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.author != request.user and not request.user.is_superuser:
+            raise PermissionDenied("Вы не можете удалить эту страну.")
+        return super().dispatch(request, *args, **kwargs)
+
+def add_comment(request, post_slug):
+    country = get_object_or_404(Country, slug=post_slug)
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.country = country
+            comment.author = request.user
+            comment.save()
+    return redirect('post', post_slug=country.slug)
 
 
 
+@login_required
+def toggle_like(request, post_slug):
+    country = get_object_or_404(Country, slug=post_slug)
+    vote = int(request.POST.get('vote', 0))
+    if vote not in (Like.LIKE, Like.DISLIKE):
+        return redirect('post', post_slug=country.slug)
 
+    # Проверяем, есть ли уже голос пользователя
+    like_obj = Like.objects.filter(country=country, user=request.user).first()
+    if like_obj:
+        if like_obj.vote == vote:
+            # Если голос совпадает – удаляем (отмена)
+            like_obj.delete()
+        else:
+            like_obj.vote = vote
+            like_obj.save()
+    else:
+        Like.objects.create(country=country, user=request.user, vote=vote)
+
+    return redirect('post', post_slug=country.slug)
 
